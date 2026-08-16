@@ -61,6 +61,7 @@ export PACS_OSS_AK=<你的AK>  PACS_OSS_SK=<你的SK>  PACS_OSS_BUCKET=<bucket>
 
 - `05_docs/architecture_overview.md` — 架构总览（链路图 + 当前实现状态）
 - `05_docs/interview_ammo.md` — 面试弹药库（12 模块：设计讲解 + 追问卡 + 踩坑实录）
+- `05_docs/usage_guide.md` — **使用说明**（日常启停/命令速查/重写工作流/故障排查）
 - `05_docs/tier1_rewrite_specs.md` — 一档模块闭卷重写需求文档（学习路径）
 
 ## 中间件（Mac 宿主机访问）
