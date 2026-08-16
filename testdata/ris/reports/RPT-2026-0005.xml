@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0005</report_id>
+  <patient>
+    <patient_id>P001</patient_id>
+    <patient_name>张三</patient_name>
+    <sex>M</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-05-26</exam_date>
+    <modality>CT</modality>
+    <exam_part>腹部</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>王雪梅</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>右侧股骨颈骨折，断端移位明显，建议手术治疗。</conclusion>
+    <description>右侧股骨颈骨质不连续，断端向上移位，颈干角变小，周围软组织肿胀。</description>
+  </diagnosis>
+</report>

@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0032</report_id>
+  <patient>
+    <patient_id>P004</patient_id>
+    <patient_name>赵强</patient_name>
+    <sex>M</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-04-19</exam_date>
+    <modality>MR</modality>
+    <exam_part>胸部</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>李建国</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>甲状腺右侧叶结节，TI-RADS 3 类，建议定期复查。</conclusion>
+    <description>甲状腺右侧叶见低回声结节，大小约 9mm x 7mm，边界清楚，形态规则，内部回声均匀。</description>
+  </diagnosis>
+</report>

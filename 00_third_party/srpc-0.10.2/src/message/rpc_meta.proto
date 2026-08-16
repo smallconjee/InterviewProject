@@ -1,0 +1,33 @@
+syntax="proto2";
+
+message RPCMetaKeyValue {
+	required string key = 1;
+	oneof value
+	{
+		int32    int_value = 2;
+		string   str_value = 3;
+		bytes  bytes_value = 4;
+	}
+};
+
+message RPCRequestMeta {
+	optional string service_name = 1;
+	optional string method_name = 2;
+	optional int64 log_id = 3;
+};
+
+message RPCResponseMeta {
+	optional int32 status_code = 1 [default = 0];
+	optional int32 error = 2 [default = 0];
+};
+
+message RPCMeta {
+	optional RPCRequestMeta request = 1;
+	optional RPCResponseMeta response = 2;
+	optional uint32 srpc_version = 3;
+	optional int32 compress_type = 4 [default = 0];
+	optional int32 origin_size = 5;
+	optional int32 compressed_size = 6;
+	optional int32 data_type = 7;
+	repeated RPCMetaKeyValue trans_info = 8;
+};

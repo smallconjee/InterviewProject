@@ -1,0 +1,42 @@
+# ==================== C 语言配置 ====================
+[[language]]
+name = "c"
+language-id = "c"
+scope = "source.c"
+file-types = ["c", "h"]
+roots = [".git", "Makefile", "CMakeLists.txt", "configure", "configure.ac"]
+comment-token = "//"
+block-comment-tokens = { start = "/*", end = "*/" }
+# 缩进配置
+indent = { tab-width = 4, unit = "    " }
+# 自动格式化
+auto-format = true
+formatter = { command = "clang-format", args = ["--style=WebKit"] }
+# C 语言服务器配置
+language-servers = ["clangd"]
+# 诊断配置
+diagnostic-severity = "Warning"
+
+[[language]]
+name = "cpp"
+language-id = "cpp"
+scope = "source.cpp"
+file-types = ["cpp", "cc", "cxx", "c++", "hpp", "hh", "hxx", "h++"]
+roots = [".git", "Makefile", "CMakeLists.txt"]
+comment-token = "//"
+block-comment-tokens = { start = "/*", end = "*/" }
+# 缩进配置
+indent = { tab-width = 4, unit = "    " }
+# 自动格式化
+auto-format = true
+formatter = { command = "clang-format", args = ["--style=WebKit"] }
+# C++ 语言服务器配置
+language-servers = ["clangd"]
+# 诊断配置
+diagnostic-severity = "Warning"
+# 标尺线（代码宽度提示）
+# rulers = [80, 100, 120]
+# 文本宽度
+text-width = 100
+# 软换行
+soft-wrap = { enable = true, wrap-at-text-width = true }

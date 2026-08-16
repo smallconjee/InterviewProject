@@ -1,0 +1,21 @@
+<report>
+  <report_id>RPT-2026-0003</report_id>
+  <study_instance_uid>1.2.826.0.1.3680043.2.1143.1</study_instance_uid>
+  <patient>
+    <patient_id>P001</patient_id>
+    <patient_name>张三</patient_name>
+    <sex>M</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-01-01</exam_date>
+    <modality>DR</modality>
+    <exam_part>腹部</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>王雪梅</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>左肺下叶占位性病变，考虑肿瘤性病变可能，建议进一步增强检查。</conclusion>
+    <description>左肺下叶见软组织肿块影，大小约 32mm x 28mm，呈分叶状，边缘见短毛刺，邻近胸膜牵拉。</description>
+  </diagnosis>
+</report>

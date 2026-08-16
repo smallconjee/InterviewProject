@@ -1,0 +1,26 @@
+{
+  "files.associations": {
+    "*.h": "cpp",
+    "*.hpp": "cpp",
+    "*.cpp": "cpp",
+    "*.cc": "cpp",
+    "iostream": "cpp",
+    "vector": "cpp",
+    "string": "cpp",
+    "memory": "cpp"
+  },
+  "editor.formatOnSave": true,
+  "cmake.sourceDirectory": "${workspaceFolder}",
+  "cmake.buildDirectory": "${workspaceFolder}/build",
+  
+  // 隐藏无需日常查看的底层数据与系统杂项目录，保持侧边栏清爽
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.data": true
+  }
+}

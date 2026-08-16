@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0039</report_id>
+  <patient>
+    <patient_id>P004</patient_id>
+    <patient_name>赵强</patient_name>
+    <sex>M</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-08-05</exam_date>
+    <modality>CT</modality>
+    <exam_part>腰椎</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>周明</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>双侧基底节区腔隙性脑梗死，脑白质变性，脑萎缩改变。</conclusion>
+    <description>双侧基底节区见点片状低密度影，边界清楚，脑室系统扩大，脑沟脑裂增宽加深，中线结构居中。</description>
+  </diagnosis>
+</report>

@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0047</report_id>
+  <patient>
+    <patient_id>P005</patient_id>
+    <patient_name>陈静</patient_name>
+    <sex>F</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-02-28</exam_date>
+    <modality>CT</modality>
+    <exam_part>骨盆</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>李建国</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>右侧股骨颈骨折，断端移位明显，建议手术治疗。</conclusion>
+    <description>右侧股骨颈骨质不连续，断端向上移位，颈干角变小，周围软组织肿胀。</description>
+  </diagnosis>
+</report>

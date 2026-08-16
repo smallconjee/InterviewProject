@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0018</report_id>
+  <patient>
+    <patient_id>P002</patient_id>
+    <patient_name>李四</patient_name>
+    <sex>F</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-07-19</exam_date>
+    <modality>DR</modality>
+    <exam_part>骨盆</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>王雪梅</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>左肺下叶占位性病变，考虑肿瘤性病变可能，建议进一步增强检查。</conclusion>
+    <description>左肺下叶见软组织肿块影，大小约 32mm x 28mm，呈分叶状，边缘见短毛刺，邻近胸膜牵拉。</description>
+  </diagnosis>
+</report>

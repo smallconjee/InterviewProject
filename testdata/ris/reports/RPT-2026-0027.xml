@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0027</report_id>
+  <patient>
+    <patient_id>P003</patient_id>
+    <patient_name>王芳</patient_name>
+    <sex>F</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-01-08</exam_date>
+    <modality>MR</modality>
+    <exam_part>腰椎</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>李建国</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>肝右叶囊肿，大小约 18mm，边界清楚，余肝实质内未见异常密度灶。</conclusion>
+    <description>肝右叶见类圆形低密度灶，边界清楚，密度均匀，CT 值约 12HU，增强扫描未见强化。</description>
+  </diagnosis>
+</report>

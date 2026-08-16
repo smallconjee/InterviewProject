@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0043</report_id>
+  <patient>
+    <patient_id>P005</patient_id>
+    <patient_name>陈静</patient_name>
+    <sex>F</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-07-01</exam_date>
+    <modality>CT</modality>
+    <exam_part>腰椎</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>周明</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>两肺纹理清晰，未见明显实质性病变，气管及主支气管通畅。</conclusion>
+    <description>胸廓对称，气管居中，双肺纹理走行自然，肺野透亮度良好，纵隔居中，心影大小形态正常。</description>
+  </diagnosis>
+</report>

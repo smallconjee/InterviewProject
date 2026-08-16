@@ -1,0 +1,39 @@
+# PACS 影像归档服务配置示例
+#
+# 加载优先级：环境变量 > 本文件 > 代码内默认值
+# 文件路径通过环境变量指定，例如：
+#   PACS_CONFIG=/workspace/03_pacs_archive_service/conf/pacs.ini ./build/bin/pacs_archive_service
+#
+# 对应的环境变量名写在各节注释里；环境变量优先级更高，适合容器部署和密钥注入。
+# 注意：真实配置文件含敏感信息，不应提交到代码库；OSS 凭据只走环境变量，不写在这里。
+
+[mysql]
+# env: PACS_MYSQL_HOST / PACS_MYSQL_PORT / PACS_MYSQL_USER / PACS_MYSQL_PASSWORD / PACS_MYSQL_DATABASE / PACS_MYSQL_POOL_SIZE
+host = mysql
+port = 3306
+user = root
+password = root
+database = pacs_db
+pool_size = 4
+
+[rabbitmq]
+# env: PACS_RABBITMQ_HOST / PACS_RABBITMQ_PORT / PACS_RABBITMQ_USER / PACS_RABBITMQ_PASSWORD
+host = rabbitmq
+port = 5672
+user = guest
+password = guest
+
+[consul]
+# env: PACS_CONSUL_HOST / PACS_CONSUL_PORT
+host = consul
+port = 8500
+
+[server]
+# env: PACS_SERVER_LISTEN_ADDR / PACS_SERVER_HTTP_PORT / PACS_SERVER_TEMP_DIR / PACS_SERVER_STORAGE_DIR
+listen_addr = 0.0.0.0
+http_port = 8080
+storage_dir = data/storage
+
+# OSS 一节刻意不写：endpoint/ak/sk/bucket 属于密钥，只通过环境变量注入
+# PACS_OSS_ENDPOINT / PACS_OSS_AK / PACS_OSS_SK / PACS_OSS_BUCKET
+# 阶段 2（异步备份）启用时必须全部提供。

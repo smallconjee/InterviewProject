@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0030</report_id>
+  <patient>
+    <patient_id>P003</patient_id>
+    <patient_name>王芳</patient_name>
+    <sex>F</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-04-23</exam_date>
+    <modality>CT</modality>
+    <exam_part>骨盆</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>周明</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>右肾结石，大小约 7mm，伴右肾轻度积水。</conclusion>
+    <description>右肾盂内见结节状高密度影，边缘光滑，右肾盂肾盏轻度扩张积水，左肾形态密度未见异常。</description>
+  </diagnosis>
+</report>

@@ -1,0 +1,35 @@
+// 认证服务接口定义（srpc + Protobuf）
+// 生成命令见 scripts/gen_proto.sh；产物 auth.pb.h/.cc 与 auth.srpc.h/.cc 提交到 proto/
+syntax = "proto3";
+
+package pacs.auth;
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    int32 code = 1;         // 0 成功；1 用户名或密码错误；2 内部错误
+    string message = 2;
+    string token = 3;       // JWT HS256
+    int64 expires_in = 4;   // 秒
+}
+
+message VerifyRequest {
+    string token = 1;
+    string action = 2;      // RBAC 动作：images:import / studies:read / backup:manage
+}
+
+message VerifyResponse {
+    int32 code = 1;         // 0 通过；1 token 无效/过期；2 权限不足；3 内部错误
+    string message = 2;
+    string username = 3;
+    string role = 4;        // radiologist / admin
+    bool allowed = 5;
+}
+
+service AuthService {
+    rpc Login (LoginRequest) returns (LoginResponse);
+    rpc Verify (VerifyRequest) returns (VerifyResponse);
+}

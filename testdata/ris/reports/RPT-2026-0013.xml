@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0013</report_id>
+  <patient>
+    <patient_id>P002</patient_id>
+    <patient_name>李四</patient_name>
+    <sex>F</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-04-06</exam_date>
+    <modality>DR</modality>
+    <exam_part>腰椎</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>周明</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>慢性支气管炎伴肺气肿改变，双肺散在炎症。</conclusion>
+    <description>双肺纹理增粗紊乱，双肺野透亮度增高，双肺散在斑片状模糊影，以双下肺为著。</description>
+  </diagnosis>
+</report>

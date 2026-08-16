@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0038</report_id>
+  <patient>
+    <patient_id>P004</patient_id>
+    <patient_name>赵强</patient_name>
+    <sex>M</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-06-26</exam_date>
+    <modality>CT</modality>
+    <exam_part>腹部</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>王雪梅</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>肝右叶囊肿，大小约 18mm，边界清楚，余肝实质内未见异常密度灶。</conclusion>
+    <description>肝右叶见类圆形低密度灶，边界清楚，密度均匀，CT 值约 12HU，增强扫描未见强化。</description>
+  </diagnosis>
+</report>

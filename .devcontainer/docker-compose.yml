@@ -1,0 +1,60 @@
+name: medical-pacs-dev
+
+services:
+  # C++ Linux 开发主容器
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    working_dir: /workspace
+    cap_add:
+      - SYS_PTRACE # 允许 GDB 调试
+    security_opt:
+      - seccomp:unconfined
+    command: sleep infinity
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+      - consul
+
+  # MySQL 8.0 数据库
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pacs_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - ../.data/mysql:/var/lib/mysql
+
+  # Redis 7 缓存
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../.data/redis:/data
+
+  # RabbitMQ 消息队列
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ../.data/rabbitmq:/var/lib/rabbitmq
+
+  # Consul 服务注册与发现
+  consul:
+    image: hashicorp/consul:1.16
+    restart: always
+    ports:
+      - "8500:8500"
+    command: "agent -dev -client=0.0.0.0"

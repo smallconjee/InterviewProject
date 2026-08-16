@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0029</report_id>
+  <patient>
+    <patient_id>P003</patient_id>
+    <patient_name>王芳</patient_name>
+    <sex>F</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-03-09</exam_date>
+    <modality>CT</modality>
+    <exam_part>腹部</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>刘洋</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>慢性支气管炎伴肺气肿改变，双肺散在炎症。</conclusion>
+    <description>双肺纹理增粗紊乱，双肺野透亮度增高，双肺散在斑片状模糊影，以双下肺为著。</description>
+  </diagnosis>
+</report>

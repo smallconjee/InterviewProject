@@ -1,0 +1,22 @@
+# 设置主题
+theme = "onelight"
+
+[editor]
+line-number = "relative"
+cursorline = true                # 高亮显示光标所在行
+cursorcolumn = false              # 设置高亮显示光标所在列
+bufferline = "always"           # 设置是否显示缓存：never, always, multiple
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"  
+
+[editor.statusline]
+left = ["mode", "spinner"]
+center = ["file-name"]
+right = ["diagnostics", "selections", "position", "file-encoding", "file-line-ending", "file-type"]
+separator = "│"
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"

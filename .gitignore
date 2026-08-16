@@ -1,0 +1,27 @@
+# 构建产物
+build/
+bin/
+lib/
+*.o
+*.a
+*.so
+
+# 中间件持久化数据目录（防止提交上 G 的数据库文件到 git）
+.data/
+
+# IDE 与系统文件
+.DS_Store
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+
+
+#个人资料
+01_cv
+
+#agent
+AGENTS.md
+# 归档/索引产物（可由导入与 --build-index 重新生成）
+data/
+# ZCode 会话状态
+.zcode/

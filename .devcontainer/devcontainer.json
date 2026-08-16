@@ -1,0 +1,23 @@
+{
+  "name": "Medical C++ Linux Workspace",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "projectName": "medical-pacs-dev",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "twxs.cmake",
+        "vadimcn.vscode-lldb"
+      ],
+      "settings": {
+        "cmake.generator": "Ninja",
+        "cmake.buildDirectory": "${workspaceFolder}/build",
+        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+        "C_Cpp.default.cppStandard": "c++11"
+      }
+    }
+  }
+}

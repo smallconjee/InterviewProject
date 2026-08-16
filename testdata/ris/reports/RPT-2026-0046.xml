@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0046</report_id>
+  <patient>
+    <patient_id>P005</patient_id>
+    <patient_name>陈静</patient_name>
+    <sex>F</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-01-02</exam_date>
+    <modality>DR</modality>
+    <exam_part>头颅</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>王雪梅</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>腰椎退行性变，L4/5 椎间盘膨出，硬膜囊受压。</conclusion>
+    <description>腰椎生理曲度变直，椎体边缘骨质增生，L4/5 椎间盘向周围膨出，硬膜囊前缘受压，椎管有效矢状径约 11mm。</description>
+  </diagnosis>
+</report>

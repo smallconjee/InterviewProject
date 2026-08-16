@@ -1,0 +1,20 @@
+<report>
+  <report_id>RPT-2026-0010</report_id>
+  <patient>
+    <patient_id>P001</patient_id>
+    <patient_name>张三</patient_name>
+    <sex>M</sex>
+    <birth_date>1960-01-01</birth_date>
+  </patient>
+  <exam>
+    <exam_date>2026-02-02</exam_date>
+    <modality>DR</modality>
+    <exam_part>腰椎</exam_part>
+    <hospital>示例医院</hospital>
+    <doctor>周明</doctor>
+  </exam>
+  <diagnosis>
+    <conclusion>甲状腺右侧叶结节，TI-RADS 3 类，建议定期复查。</conclusion>
+    <description>甲状腺右侧叶见低回声结节，大小约 9mm x 7mm，边界清楚，形态规则，内部回声均匀。</description>
+  </diagnosis>
+</report>
