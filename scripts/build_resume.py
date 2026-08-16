@@ -42,6 +42,7 @@ STYLE_SCHEMA = {
     "职位字号":   (11, 8, 16),        # px，姓名下一行
     "标题字号":   (12, 9, 18),        # px，浅蓝条板块标题
     "日期字号":   (9, 7, 13),         # px，右侧日期
+    "联系字号":   (9.5, 7, 14),       # px，联系方式一行（电话/邮箱）
     "行距":       (1.52, 1.1, 2.2),   # 倍数
     "页边距上":   (11, 0, 25),        # mm
     "页边距下":   (9, 0, 25),         # mm
@@ -67,7 +68,10 @@ TEMPLATE = """<!DOCTYPE html>
   .header {{ text-align: center; margin-bottom: 7px; }}
   .name {{ font-size: {s[姓名字号]}px; font-weight: 700; letter-spacing: 2px; }}
   .title-line {{ font-size: {s[职位字号]}px; color: #636e72; margin-top: 2px; }}
-  .contact {{ font-size: {s[正文字号]}px; color: #636e72; margin-top: 3px; }}
+  /* 联系行用拉丁字体优先：中文字体（苹方）的小写字母 x 高度极矮，
+     全小写的邮箱会显得只有数字的 2/3 大——Helvetica/Arial 的字身更饱满 */
+  .contact {{ font-family: "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", sans-serif;
+              font-size: {s[联系字号]}px; color: #636e72; margin-top: 3px; letter-spacing: 0.2px; }}
   .contact .ico {{ color: #2e86c1; font-style: normal; margin: 0 3px 0 12px; }}
   .contact .ico:first-child {{ margin-left: 0; }}
   .section-title {{ background: #e8f3fb; color: #1f6fb2; font-size: {s[标题字号]}px;
