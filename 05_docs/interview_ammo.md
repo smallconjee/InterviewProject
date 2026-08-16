@@ -438,9 +438,55 @@ BasicReject→DLQ 计数=1 ④签名 ListObjects 确认云端对象字节数与�
 
 ---
 
+## 13. Web 控制台 + RIS TLV 桥接：workflow 自定义协议客户端（阶段 7，2026-08-16）
+
+### 设计讲解
+
+1. **动机**：浏览器无法直连 RIS 的 TCP 9090（TLV 二进制协议）。选择在 PACS 服务内写 C++ 桥接（`src/risproxy/`），把 `GET /api/v1/reports/search|suggest` 翻译成 TLV 帧打到 RIS——两个后端首次真正打通，"归档服务作为客户端按 TLV 协议调用检索服务"从面试话术变成真实代码。
+2. **workflow 自定义协议机制**：`RisTlvMessage : public protocol::ProtocolMessage`，实现 `encode()`（发送方向：6 字节头 + payload 装进两个 iovec 零拷贝）和 `append()`（接收方向：增量半包状态机，`size_t*` 出参告知框架消费字节数）——官方 tutorial-10 同款模式。客户端任务用 `WFNetworkTaskFactory<RisTlvMessage, RisTlvMessage>::create_client_task(TT_TCP, ...)` 创建，`set_keep_alive(60s)` 让 workflow 连接池复用长连接（对比 test_ris_client.py 每查询新建连接）。
+3. **全异步桥接（核心卖点）**：wfrest handler 支持第三参 `SeriesWork* series`——handler 里把 TLV 客户端任务 `series->push_back(task)`，HTTP 响应推迟到 TLV 回调里写。整条链路（收 HTTP → 发 TLV → 收 TLV → 回 HTTP）不阻塞任何 handler 线程，这是 workflow Task/Series 异步编排的标准用法，也是"为什么不用 muduo 写 HTTP"追问的现成论据。
+4. **同源静态托管免 CORS**：`svr.Static("/ui", "./06_web")` 把前端挂在同一 8080 端口，浏览器请求无跨域，后端零 CORS 头代码。wfrest 的 Static 只映射 `GET /ui/*` 不出目录首页，补了 `/ui` 和 `/ui/` 两个 302 跳转。
+5. **登录链路补全**：原来拿 JWT 只能 CLI `--login`。新增 `POST /api/v1/auth/login`（srpc 同步调认证服务，与 AuthGate::authorize 现状一致）；响应不含 role（LoginResponse 协议没这字段），前端从 JWT payload 段 base64url 解码取 `sub/role/exp`——顺便演示了 JWT 三段结构。
+6. **RBAC 零侵入**：RIS 桥接接口复用现有 action `studies:read` 鉴权，认证服务的 RBAC 矩阵一行不改；admin/radiologist 都能检索，备份页仍仅 admin。
+7. **后端纯增量**：既有路由/归档流水线/DAO/Config 零改动，main.cpp 只追加代码块——`git diff` 可逐行验证（这是和"改后端逻辑"权衡后的明确决策）。
+8. **前端零依赖**：原生 HTML/CSS/JS + hash 路由单页（06_web/ 三件套），不引入 Node 构建链——C++ 面试项目的前端定位是"演示后端能力的壳"，离线可开、刷新即生效。
+
+### 追问卡
+
+1. **Q: 浏览器怎么连你的 TCP 服务？** → 连不了也不该连：在 HTTP 网关层做协议桥接，TLV 编解码在服务端完成，前端只消费 JSON。备选方案是 WebSocket 网关或 RIS 加 HTTP——前者多一条长连接链路，后者要动 muduo 服务。
+2. **Q: 桥接为什么是异步的？同步调行不行？** → handler 里同步等 RIS 会占住 wfrest 的 handler 线程，RIS 慢查询时直接拖垮 HTTP 并发；SeriesWork 串联让等待发生在 workflow 调度器里。（对比：登录接口是同步 srpc——低频且 localhost，属有意识的取舍。）
+3. **Q: TLV 客户端怎么处理粘包/半包？** → 和服务端同款思路：`append()` 增量状态机——头部 6 字节不齐先攒，齐了按大端读长度，体不齐继续攒；帧类型白名单（0x11/0x12/0x7F）+ `set_size_limit(1MB)` 防内存攻击。
+4. **Q: RIS 挂了会怎样？** → 连接失败 → 任务 state != SUCCESS → 映射 HTTP 502 + `WFGlobal::get_error_string` 错误详情；查询幂等设了 retry=1；workflow 连接池在 RIS 恢复后自动重连（实测：杀掉 RIS 再拉起，无需重启 PACS）。
+5. **Q: 前端会话怎么管？** → JWT 存 localStorage，每次请求带 `Authorization: Bearer`；401 全局拦截清会话弹登录；过期靠 JWT exp 前端预检。追问 XSS 偷 token：localStorage 确实比 httpOnly cookie 风险高，演示项目接受，生产可换 cookie+CSRF token。
+6. **Q: 为什么静态资源不放 CDN/nginx？** → 单二进制自包含部署更贴合项目演示定位；wfrest Static 自带 MIME 与文件服务，生产再拆。
+
+### 踩坑实录（5 个，全是当天实测）
+
+1. **wfrest `query()` 不做百分号解码**：前端 `encodeURIComponent` 的中文查询串原样透传，RIS 收到 `%E7%A3%A8...` 字面量，命中 0 条——症状极其隐蔽（HTTP 200 正常返回）。修法：桥接 handler 里手写 `url_decode`（含 `+`→空格）。
+2. **`resp->Json("字面量")` 编译歧义**：wfrest::Json 存在 `const char*` 隐式构造，同时匹配 `Json(const Json&)` 和 `Json(const std::string&)` 两个重载——字符串字面量必须显式 `std::string(...)`。
+3. **wfrest::Json::parse 非法输入是空指针陷阱**：parse 坏 JSON 得到 `node_=null` 的对象，`has()/get()` 会走到 `json_value_type(nullptr)` 直接解引用崩溃。登录接口三重校验 `is_valid() → has() → is_string()` 才取值。
+4. **wfrest Static 不出目录首页**：`/ui/` 映射到目录而非 index.html；补 `/ui`、`/ui/` 两个 302 到 `/ui/index.html`。
+5. **pkill 自杀坑再现**：容器内脚本 `pkill -f "bin/xxx"` 会匹配到自己所在的 `bash -c` 命令行（内含模式串）导致 SIGTERM 自杀——必须 `$` 锚定（usage_guide 第七节早有记载，这次又被咬了一口）。
+
+### 已知限制（面试坦诚项）
+
+- 静态根目录相对 CWD，须从仓库根目录启动（启动日志有提示与 WARNING）。
+- `/api/v1/studies` 无分页（LIMIT 200 硬编码），前端全量渲染。
+- RIS 搜索结果不含 study_instance_uid，`has_image` 只能出徽章、无法深链到 PACS 检查详情（可列为增量点：RIS 响应 JSON 加字段）。
+- 登录接口同步 srpc 占用一个 handler 线程（与 AuthGate.authorize 现状一致）。
+
+### 实证记录
+
+- curl 全套通过：登录 200 拿 token / 无 token 401 / 错密码 401 / doctor 检索 200 / doctor 备份 403 / 缺 query 400 / 杀 RIS → 502 "Connection refused" → 拉起后自动恢复 200。
+- GUI（浏览器自动化）走查通过：admin 全 7 页（含"磨玻璃"检索 5 条、高亮、has_image 徽章、BK-tree 纠错建议条、备份流水 CONFIRMED）、doctor 菜单裁剪 + 直访备份页权限卡、`/ui` 302、刷新后 JWT 会话保持。
+
+---
+
 ## 待补清单（随开发更新）
 
 - [x] OSS 消费端实测（真实阿里云 cn-wuhan-lr：四幕全过，云端对象已确认，见第 8 节）
 - [ ] 压测（wrk2 导入接口 / RIS 检索 QPS）与基准数据
 - [x] 2026-08-16：全部核心模块完成（第 7-12 节弹药补齐）
 - [x] 索引版本切换与缓存版本化实证（第 12 节）
+- [x] 2026-08-16：Web 控制台 + RIS TLV 桥接完成（第 13 节，curl + GUI 双实证）
+- [ ] RIS 搜索响应补 study_instance_uid → 前端 has_image 徽章可深链到 PACS 检查详情（跨系统联动增强）

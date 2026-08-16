@@ -9,10 +9,16 @@
 //   GET  /api/v1/studies          检查列表（?patient_id=&issuer= 过滤）
 //   GET  /api/v1/studies/{uid}    检查详情（含序列与实例数）
 //   GET  /api/v1/instances/{uid}  实例状态（归档/备份状态机查询）
+//   GET  /api/v1/admin/backup-status  备份任务流水（仅 admin 角色）
+//   POST /api/v1/auth/login        登录换 JWT（Web 控制台用，srpc 调认证服务）
+//   GET  /api/v1/reports/search    RIS 报告检索桥接（TLV 0x01 → RIS TCP 9090）
+//   GET  /api/v1/reports/suggest   RIS 拼写纠错桥接（TLV 0x02）
+//   GET  /ui/*                     Web 控制台静态资源（06_web/，同源免 CORS）
 // 工具模式：
 //   --parse <file>   解析并打印 DICOM 元数据
 //   --sha256 <file>  计算文件 SHA-256
 // ============================================================================
+#include <cctype>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
@@ -22,6 +28,7 @@
 #include <vector>
 #include <wfrest/HttpServer.h>
 #include <workflow/WFFacilities.h>
+#include <workflow/WFGlobal.h>
 
 #include "archive/ArchiveDao.h"
 #include "archive/ArchiveService.h"
@@ -32,6 +39,7 @@
 #include "db/MySQLPool.h"
 #include "dicom/DicomReader.h"
 #include "mq/BackupDispatcher.h"
+#include "risproxy/RisTlvClient.h"
 #include "util/Sha256.h"
 
 static WFFacilities::WaitGroup wait_group(1);
@@ -397,6 +405,161 @@ int main(int argc, char *argv[]) {
     svr.GET("/", [](const wfrest::HttpReq *req, wfrest::HttpResp *resp) {
         resp->String("{\"code\":0,\"message\":\"PACS Archive Service is running.\"}");
     });
+
+    // ==================== Web 控制台支撑（纯增量：不影响以上既有路由） ====================
+
+    // RIS 桥接地址：环境变量 PACS_RIS_ADDR（host:port）> 默认 127.0.0.1:9090
+    std::string ris_host;
+    unsigned short ris_port = 0;
+    pacs::risproxy::resolve_ris_addr(ris_host, ris_port);
+    LOG_INFO << "[RIS Proxy] RIS 检索服务地址: " << ris_host << ":" << ris_port;
+
+    // 静态资源挂载：Web 控制台在 /ui（与 API 同源，免 CORS）。根目录相对 CWD，
+    // 须从仓库根目录启动；wfrest Static 只映射 GET /ui/* 到文件，目录本身不出
+    // index.html，故补 /ui 与 /ui/ 两个 302 跳转方便直接输入地址
+    {
+        std::FILE *f = std::fopen("./06_web/index.html", "rb");
+        if (f != NULL) {
+            std::fclose(f);
+            LOG_INFO << "Web 控制台已就绪: http://localhost:" << cfg.server.http_port
+                     << "/ui/ （静态根目录 ./06_web）";
+        } else {
+            LOG_WARN << "未找到 ./06_web/index.html（需从仓库根目录启动），/ui 将不可用";
+        }
+    }
+    svr.Static("/ui", "./06_web");
+    svr.GET("/ui", [](const wfrest::HttpReq *req, wfrest::HttpResp *resp) {
+        resp->headers["Location"] = "/ui/index.html";
+        resp->set_status(302);
+    });
+    svr.GET("/ui/", [](const wfrest::HttpReq *req, wfrest::HttpResp *resp) {
+        resp->headers["Location"] = "/ui/index.html";
+        resp->set_status(302);
+    });
+
+    // 登录接口：Web 前端换取 JWT（srpc 同步调用——与 --login 工具、AuthGate::
+    // authorize 的现状一致，占用一个 handler 线程，取舍见弹药库讨论）
+    svr.POST("/api/v1/auth/login", [&cfg](const wfrest::HttpReq *req, wfrest::HttpResp *resp) {
+        // wfrest::Json 类型陷阱防护：parse 非法 JSON 得到 node_=null 的对象，
+        // 直接 has()/get 会解引用空指针；非字符串节点取值同样危险——三重校验
+        auto json_str = [&req](const char *key, std::string &out) -> bool {
+            if (req->body().empty()) return false;
+            wfrest::Json j = wfrest::Json::parse(req->body());
+            if (!j.is_valid() || !j.has(key) || !j[key].is_string()) return false;
+            out = j[key].get<std::string>();
+            return true;
+        };
+        std::string user, pass;
+        json_str("username", user);
+        json_str("password", pass);
+        if (user.empty() || pass.empty()) {
+            // 注意：resp->Json 的两个重载对 const char* 有歧义（wfrest::Json 存在
+            // 隐式构造），字符串字面量必须显式构造 std::string
+            resp->Json(std::string(
+                "{\"code\":400,\"message\":\"需要 JSON 字段 username 与 password\"}"));
+            resp->set_status(400);
+            return;
+        }
+        // 与 run_login_tool 相同的直连模式：认证服务默认同机 127.0.0.1:auth_port
+        // （PACS_AUTH_ADDR 覆盖只作用于 AuthGate 的 Verify，此处不跟随——已知限制）
+        ::pacs::auth::AuthService::SRPCClient client(
+            "127.0.0.1", (unsigned short)cfg.server.auth_port);
+        ::pacs::auth::LoginRequest rpc_req;
+        rpc_req.set_username(user);
+        rpc_req.set_password(pass);
+        ::pacs::auth::LoginResponse rpc_resp;
+        srpc::RPCSyncContext ctx;
+        client.Login(&rpc_req, &rpc_resp, &ctx);
+        if (!ctx.success) {
+            std::string j = "{\"code\":503,\"message\":\"认证服务调用失败: " +
+                            json_escape(ctx.errmsg) + "\"}";
+            resp->Json(j);
+            resp->set_status(503);
+            return;
+        }
+        if (rpc_resp.code() != 0) {
+            std::string j = "{\"code\":401,\"message\":\"" +
+                            json_escape(rpc_resp.message()) + "\"}";
+            resp->Json(j);
+            resp->set_status(401);
+            return;
+        }
+        // 响应不含 role：LoginResponse 协议里没有该字段，前端从 JWT payload 解码
+        char j[512];
+        std::snprintf(j, sizeof(j),
+                      "{\"code\":0,\"token\":\"%s\",\"username\":\"%s\",\"expires_in\":%lld}",
+                      json_escape(rpc_resp.token()).c_str(), json_escape(user).c_str(),
+                      (long long)rpc_resp.expires_in());
+        resp->Json(std::string(j));
+    });
+
+    // RIS 桥接：reports/search(TLV 0x01) 与 reports/suggest(TLV 0x02)。
+    // handler 第三参拿到 SeriesWork，把 TLV 客户端任务串进当前 HTTP 任务的
+    // series——回调里写响应，全程异步不占 handler 线程（workflow 核心用法）
+    auto add_ris_route = [&svr, &auth_check, ris_host, ris_port](
+                             const char *path, uint8_t frame_type) {
+        svr.GET(path, [&auth_check, ris_host, ris_port, frame_type](
+                          const wfrest::HttpReq *req, wfrest::HttpResp *resp,
+                          SeriesWork *series) {
+            if (!auth_check(req, resp, "studies:read")) return;
+            // wfrest 的 query() 不做百分号解码：浏览器 encodeURIComponent 后的
+            // 中文查询串必须手动还原，否则 RIS 拿到的是 %XX 字面量（实测踩坑）
+            std::string raw = req->query("query");
+            std::string q;
+            q.reserve(raw.size());
+            for (size_t i = 0; i < raw.size(); i++) {
+                if (raw[i] == '%' && i + 2 < raw.size() &&
+                    ::isxdigit(static_cast<unsigned char>(raw[i + 1])) &&
+                    ::isxdigit(static_cast<unsigned char>(raw[i + 2]))) {
+                    auto hex = [](char c) -> int {
+                        if (c >= '0' && c <= '9') return c - '0';
+                        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+                        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+                        return -1;
+                    };
+                    int hi = hex(raw[i + 1]), lo = hex(raw[i + 2]);
+                    if (hi >= 0 && lo >= 0) {
+                        q += static_cast<char>(hi * 16 + lo);
+                        i += 2;
+                        continue;
+                    }
+                }
+                q += (raw[i] == '+') ? ' ' : raw[i];
+            }
+            if (q.empty()) {
+                resp->Json(std::string("{\"code\":400,\"message\":\"缺少 query 参数\"}"));
+                resp->set_status(400);
+                return;
+            }
+            pacs::risproxy::RisTlvTask *task = pacs::risproxy::create_ris_task(
+                ris_host, ris_port, frame_type, q,
+                [resp](pacs::risproxy::RisTlvTask *t) {
+                    if (t->get_state() != WFT_STATE_SUCCESS) {
+                        std::string j =
+                            std::string("{\"code\":502,\"message\":\"RIS 检索服务不可达: ") +
+                            json_escape(WFGlobal::get_error_string(t->get_state(),
+                                                                   t->get_error())) +
+                            "\"}";
+                        resp->set_status(502);
+                        resp->Json(j);
+                        return;
+                    }
+                    const pacs::risproxy::RisTlvMessage *m = t->get_resp();
+                    if (m->type() == pacs::risproxy::RIS_TYPE_ERROR) {
+                        std::string j = "{\"code\":502,\"message\":\"RIS 返回错误帧: " +
+                                        json_escape(m->value()) + "\"}";
+                        resp->set_status(502);
+                        resp->Json(j);
+                        return;
+                    }
+                    // RIS 响应帧 payload 即 JSON 文本，原样透传（Json() 自带合法性校验）
+                    resp->Json(m->value());
+                });
+            series->push_back(task);
+        });
+    };
+    add_ris_route("/api/v1/reports/search", pacs::risproxy::RIS_TYPE_SEARCH_REQ);
+    add_ris_route("/api/v1/reports/suggest", pacs::risproxy::RIS_TYPE_SUGGEST_REQ);
 
     if (svr.start(cfg.server.http_port) == 0) {
         scanner_thread = std::thread(&pacs::mq::BackupDispatcher::scan_loop, &backup_dispatcher);

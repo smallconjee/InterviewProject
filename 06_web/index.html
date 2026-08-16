@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!-- ============================================================================
+  index.html — PACS Web 控制台应用壳（零依赖，静态托管于 wfrest /ui）
+  页面逻辑全部在 app.js（hash 路由单页应用）；此文件只负责骨架：
+  顶栏导航（JS 按角色生成）+ 视图容器 + 登录遮罩 + 全局 toast
+============================================================================ -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PACS 影像归档系统 · 控制台</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+  <link rel="stylesheet" href="/ui/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">🏥</span>PACS 影像归档系统</div>
+    <nav id="nav" class="nav"></nav>
+    <div id="userbox" class="userbox"></div>
+  </header>
+
+  <main id="view" class="container"></main>
+
+  <!-- 登录遮罩：无会话或 401 时覆盖整个界面 -->
+  <div id="login-overlay" class="overlay hidden">
+    <div class="login-card">
+      <h2>登录控制台</h2>
+      <p class="muted">PACS 影像归档 · RIS 报告检索</p>
+      <form id="login-form">
+        <label>用户名
+          <input name="username" autocomplete="username" required autofocus>
+        </label>
+        <label>密码
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <div id="login-error" class="login-error hidden"></div>
+        <button class="btn block" type="submit">登 录</button>
+      </form>
+      <div class="demo-tip">
+        演示账号：<code>admin / admin123</code>（管理员）<br>
+        <code>doctor / doctor123</code>（放射医师）
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/ui/app.js"></script>
+</body>
+</html>

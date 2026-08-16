@@ -46,6 +46,25 @@ RIS_INDEX_DIR=data/ris/index nohup stdbuf -oL ./build/bin/ris_report_search > /t
 **停止**：`pkill -f "bin/pacs_archive_service$"`（按名字锚定，见第七节的坑）。
 **消费者特殊**：阻塞消费设计下 SIGTERM 会直接退出（未 ACK 消息由 broker 重投，安全）。
 
+### Web 控制台（2026-08-16 新增，零依赖前端）
+
+服务起齐（auth + RIS + PACS）后，**Mac 浏览器打开 `http://localhost:8080/ui/`** 即可图形化操作全部功能，面试演示优先走这里。
+
+| 页面 | 功能 | 对应接口 |
+|---|---|---|
+| 登录页 | 账号密码换 JWT（角色决定菜单） | `POST /api/v1/auth/login` |
+| 检查列表 | 患者ID/机构筛选，点击行进详情 | `GET /api/v1/studies` |
+| 检查详情 | 序列表格（modality/影像数） | `GET /api/v1/studies/{uid}` |
+| 报告检索 | RIS 搜索 + 关键词高亮 + BK-tree 纠错建议 | `GET /api/v1/reports/search` / `suggest`（TLV 桥接） |
+| 影像导入 | .dcm 上传，展示 ARCHIVED/DUPLICATE/CONFLICT 结果 | `POST /api/v1/images/import` |
+| 实例状态 | 归档/备份双状态机 + SHA-256 | `GET /api/v1/instances/{uid}` |
+| 备份任务 | 消息表流水（**仅 admin 可见**） | `GET /api/v1/admin/backup-status` |
+
+- 演示账号：`admin/admin123`（管理员）、`doctor/doctor123`（放射医师，看不到备份页）。
+- RIS 桥接地址默认 `127.0.0.1:9090`，可用环境变量 `PACS_RIS_ADDR=host:port` 覆盖。
+- 静态文件在 `06_web/`，**相对启动目录解析**——必须从仓库根目录（`/workspace`）启动二进制，否则启动日志会打 WARNING。
+- 前端三件套（index.html / style.css / app.js）无任何依赖无构建步骤，改完刷新浏览器即生效。
+
 ---
 
 ## 三、常用命令速查
