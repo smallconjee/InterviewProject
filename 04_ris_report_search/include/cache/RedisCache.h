@@ -12,6 +12,7 @@
 #pragma once
 
 #include <cstdint>
+#include <mutex>
 #include <string>
 
 namespace ris {
@@ -34,12 +35,19 @@ public:
     static std::string make_key(int index_version, const std::string &query);
 
 private:
+    // 调用方必须持有 mtx_（get/setex 内部调用；不能自持锁否则死锁）
     bool ensure_connected();
 
     std::string host_;
     int port_;
     void *ctx_; // redisContext*（头文件不暴露 hiredis）
     bool warned_; // Redis 故障只告警一次，避免刷屏
+    // hiredis 同步上下文非线程安全，而本对象被 4 个 muduo IO 线程并发调用
+    // （每条连接的 onMessage → do_search → redis_.get/setex）——必须整体互斥。
+    // 已知取舍：临界区含一次网络往返（~1ms 量级），4 线程的缓存查询会串行化；
+    // 当前量级（长连接低频查询）可接受。演进点：每 IO 线程独立连接或小连接池，
+    // 消除串行化——与 LruCache 的细粒度锁形成对比讲点。
+    mutable std::mutex mtx_;
 };
 
 } // namespace cache

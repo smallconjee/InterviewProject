@@ -117,9 +117,12 @@ int main() {
             std::this_thread::sleep_for(std::chrono::seconds(3));
             continue;
         }
-        // 手动 ACK 模式：no_ack=false；no_local/exclusive 按默认
+        // 手动 ACK 模式：no_ack=false；no_local 按默认
+        // exclusive 显式传 false（SimpleAmqpClient 2.5.1 默认 true）：独占消费者
+        // 会让第二个实例 403 ACCESS_REFUSED，堵死"按积压横向扩容消费者"的路；
+        // 非独占时 broker 在多个消费者间轮询分发，单实例僵死也不锁死队列
         std::string tag = channel->BasicConsume("pacs.backup.queue", "pacs-backup-consumer",
-                                                true, false);
+                                                true, false, false);
 
         try {
             while (!g_stop) {

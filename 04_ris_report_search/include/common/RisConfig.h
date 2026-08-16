@@ -15,6 +15,7 @@ namespace common {
 
 struct RisConfig {
     int listen_port = 9090;              // env RIS_LISTEN_PORT
+    int io_threads = 4;                  // env RIS_IO_THREADS（muduo sub-loop 数，默认 4）
     std::string dict_dir = "/usr/local/dict";   // env RIS_DICT_DIR（cppjieba 词典）
     std::string index_dir = "data/ris/index";   // env RIS_INDEX_DIR（版本目录父目录）
     std::string mysql_host = "mysql";    // env RIS_MYSQL_HOST（pacs_db 关联查询）
@@ -30,6 +31,7 @@ struct RisConfig {
         RisConfig c;
         const char *s;
         if ((s = ::getenv("RIS_LISTEN_PORT")) != NULL) c.listen_port = std::atoi(s);
+        if ((s = ::getenv("RIS_IO_THREADS")) != NULL) c.io_threads = std::atoi(s);
         if ((s = ::getenv("RIS_DICT_DIR")) != NULL && *s) c.dict_dir = s;
         if ((s = ::getenv("RIS_INDEX_DIR")) != NULL && *s) c.index_dir = s;
         if ((s = ::getenv("RIS_MYSQL_HOST")) != NULL && *s) c.mysql_host = s;

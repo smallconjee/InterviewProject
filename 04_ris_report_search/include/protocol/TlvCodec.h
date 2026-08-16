@@ -30,7 +30,7 @@ enum FrameType {
 enum DecodeStatus {
     DECODE_OK = 0,      // 解出一帧（frame 有效）
     DECODE_PARTIAL,     // 半帧：等更多数据（内部缓冲已保留）
-    DECODE_BAD_TYPE,    // 非法类型：该帧已跳过，连接可继续
+    DECODE_BAD_TYPE,    // 非法类型：长度字段不可信、无法重同步，连接必须断开
     DECODE_TOO_LONG,    // 超长帧：连接应断开
     DECODE_BAD_LENGTH,  // 长度头非法
 };

@@ -38,7 +38,7 @@ bool RedisCache::ensure_connected() {
     if (ctx_ != NULL) {
         return true;
     }
-    struct timeval tv = {2, 0}; // 连接/读写超时 2s：缓存层不允许拖垮检索
+    struct timeval tv = {2, 0};
     redisContext *ctx = ::redisConnectWithTimeout(host_.c_str(), port_, tv);
     if (ctx == NULL || ctx->err != 0) {
         if (ctx != NULL) ::redisFree(ctx);
@@ -49,11 +49,15 @@ bool RedisCache::ensure_connected() {
         }
         return false;
     }
+    // redisConnectWithTimeout 只约束建连阶段；读写超时要单独设置，
+    // 否则 Redis 卡顿时 redisCommand 可能长时间阻塞持有 mtx_ 的 IO 线程
+    ::redisSetTimeout(ctx, tv);
     ctx_ = ctx;
     return true;
 }
 
 bool RedisCache::get(const std::string &key, std::string &out) {
+    std::lock_guard<std::mutex> lk(mtx_); // 4 个 IO 线程并发调用，ctx 非线程安全
     if (!ensure_connected()) return false;
     redisContext *ctx = reinterpret_cast<redisContext *>(ctx_);
     redisReply *reply = static_cast<redisReply *>(::redisCommand(ctx, "GET %s", key.c_str()));
@@ -72,6 +76,7 @@ bool RedisCache::get(const std::string &key, std::string &out) {
 }
 
 bool RedisCache::setex(const std::string &key, int ttl_seconds, const std::string &value) {
+    std::lock_guard<std::mutex> lk(mtx_); // 同 get：整体互斥保护 hiredis 上下文
     if (!ensure_connected()) return false;
     redisContext *ctx = reinterpret_cast<redisContext *>(ctx_);
     redisReply *reply = static_cast<redisReply *>(

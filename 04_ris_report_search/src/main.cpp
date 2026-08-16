@@ -107,7 +107,7 @@ public:
         server_.setMessageCallback(
             std::bind(&RISSearchServer::onMessage, this, std::placeholders::_1,
                       std::placeholders::_2, std::placeholders::_3));
-        server_.setThreadNum(4);
+        server_.setThreadNum(cfg_.io_threads); // sub-loop 数可配置：默认 4，压测后可调
     }
 
     void start() { server_.start(); }
@@ -312,7 +312,7 @@ int main(int argc, char *argv[]) {
     server.load_components();
     server.start();
     LOG_INFO << "[RIS Search] muduo TCP 检索服务已在端口 " << cfg.listen_port
-             << " 监听 (4 线程 Reactor)...";
+             << " 监听 (" << cfg.io_threads << " 线程 Reactor)...";
 
     loop.loop();
     return 0;
