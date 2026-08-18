@@ -26,3 +26,7 @@ AGENTS.md
 data/
 # ZCode 会话状态
 .zcode/
+
+# 简历与个人信息（含联系方式，永不入库）
+05_docs/简历/
+05_docs/面试工具包/简历当前文本快照.md
