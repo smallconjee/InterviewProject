@@ -18,6 +18,7 @@ lib/
 
 #个人资料
 01_cv
+02_doc/AccessKey.csv
 
 #agent
 AGENTS.md
